@@ -27,16 +27,7 @@ int main(){
 	int gameChoice,mathsCount=0,scienceCount=0,generalCount=0,subChoice;
 	char choice;
 	int mainChoice, goalTime;   
-	struct FlashCards{
-		char question[500];
-		char answer[100];
-		int difficultyLevel;
-	};
-	struct FlashCards Maths[100];
-	struct FlashCards Science[100];
-	struct FlashCards General[100];
-	struct FlashCards difficultyArr[100];  //to filter out questions of similar difficulty levels
-	struct FlashCards *arr;   //this will point to subjects in the struct (maths/science/general)
+
 	int *counter;   
 	int difficultyChoice;
 	int difficultyCount=0;
@@ -307,7 +298,7 @@ void battleMode(struct FlashCards difficultyArr[], int difficultyCount, int goal
 	printf("Stats\n");
     printf("Initial HP of enemy : %d\n", enemyHP);
     
-    printf("Initial HP of player: &d\n", playerHP);
+    printf("Initial HP of player: %d\n", playerHP);
 
 	printf("\t\t-----BATTLE MODE START-----\n");
 	printf("Alloted time to complete 5 questions is %d seconds\n",goalTime);
