@@ -10,12 +10,23 @@
 #include <stdlib.h>
 #include <time.h>
 #include <ctype.h>
+struct FlashCards{
+	char question[500];
+	char answer[100];
+	int difficultyLevel;
+};
+struct FlashCards Maths[100];
+struct FlashCards Science[100];
+struct FlashCards General[100];
+struct FlashCards difficultyArr[100];  //to filter out questions of similar difficulty levels
+struct FlashCards *arr;
+void battleMode(struct FlashCards difficultyArr[], int difficultyCount, int goalTime );
 
 int main(){
-	int num,i,subjectNo,indexDel,indexEdit,editChoice;
+	int num,i,subjectNo,indexDel,indexEdit,editChoice,count;
 	int gameChoice,mathsCount=0,scienceCount=0,generalCount=0,subChoice;
 	char choice;
-	int mainChoice;   // changed from char to int
+	int mainChoice, goalTime;   
 	struct FlashCards{
 		char question[500];
 		char answer[100];
@@ -24,8 +35,11 @@ int main(){
 	struct FlashCards Maths[100];
 	struct FlashCards Science[100];
 	struct FlashCards General[100];
+	struct FlashCards difficultyArr[100];  //to filter out questions of similar difficulty levels
 	struct FlashCards *arr;   //this will point to subjects in the struct (maths/science/general)
 	int *counter;   
+	int difficultyChoice;
+	int difficultyCount=0;
 	printf("WELCOME TO QUIZIFY\n");
 	printf("Store Flashcards to start playing fun games!\n ");
 	while(1){
@@ -227,36 +241,52 @@ int main(){
 		       	printf("What subject do you want to test? ");
 		    	printf("(1:Maths, 2:Science, 3:GeneralKnowledge)\n");
 		    	scanf("%d",&subChoice);
-		    	if(subChoice==1&&mathsCount<5){
-		    		printf("You do not have enough flashcards to start the game ");
-		    		return 0;
-				}else if(subChoice==2&&scienceCount<5){
-					printf("You do not have enough flashcards to start the game ");
-					return 0;
-				}else if(subChoice==3&&generalCount<5){
-					printf("You do not have enough flashcards to start the game ");
-					return 0;
+		    	if(subChoice==1){
+		    		arr = Maths;
+		    		count = mathsCount;	
+				}else if(subChoice==2){
+					arr = Science;
+					count = scienceCount;
+				}else if(subChoice==3){
+					arr = General;
+					count = generalCount;
 				}else{
-					printf("      GAME MENU      \n");
-	                printf("1. Sudden death\n");
-	                printf("2.      \n");
-	                printf("3.      \n");
-	                printf("Enter the game you want to play with these questions: ");
-	                scanf("%d", &gameChoice);
+					printf("Invalid option\n");
+					break;
+				}
+		    	printf("Choose the difficulty level: ");
+		    	scanf("%d", &difficultyChoice);
+		    	for(i=0;i<count;i++){
+		    		if(arr[i].difficultyLevel==difficultyChoice){
+		    			difficultyArr[difficultyCount]=arr[i];
+		    			difficultyCount++;
+					}
+				}
+				if(difficultyCount<5){
+					printf("You do not have enough flashcards to start the game\n");
+					break;
+				}
+				printf("      GAME MENU      \n");
+	            printf("1. Sudden death\n");
+	            printf("2. Battle mode\n");
+	            printf("3.      \n");
+	            printf("Enter the game you want to play with these questions: ");
+	            scanf("%d", &gameChoice);
 	                switch(gameChoice){
 			            case 1:
 			    	         //function name
 			    	     break;
 			            case 2:
-				               //function name
+							printf("Enter your goal time in seconds, if you do not want to set any, type in 0");
+							scanf("%d", &goalTime);
+							battleMode(difficultyArr, difficultyCount, goalTime);
 				         break;
 			            case 3:
 				            //function name
 				         break;
 			           default:
 				         printf("Please enter a valid game option.\n");	
-		            }
-				}	
+		            }	
 				break;
 			case 5:
 				return 0;
@@ -265,4 +295,57 @@ int main(){
 		}
 	}
 }  
+void battleMode(struct FlashCards difficultyArr[], int difficultyCount, int goalTime){
+	int enemyHP , playerHP, damage=15;
+	int correct,wrong,askedQues=0;
+	int index,i;
+	char answer[100];
+	enemyHP = 60;
+	playerHP = 60;
+	printf("You get a fifteen point hit at your enemy per question if answered right\n");
+	printf("Similarily your enemey gets a fifteen point hit at you per question if answered incorrectly\n");
+	printf("Stats\n");
+    printf("Initial HP of enemy : %d\n", enemyHP);
+    
+    printf("Initial HP of player: &d\n", playerHP);
 
+	printf("\t\t-----BATTLE MODE START-----\n");
+	printf("Alloted time to complete 5 questions is %d seconds\n",goalTime);
+	
+	time_t start= time(NULL);
+	srand(time(NULL));
+	
+	while(askedQues<5 && enemyHP > 0 && playerHP >0){
+		index = rand() % difficultyCount;
+		printf("\nQuestion%d) %s\n" , askedQues+1,difficultyArr[index].question);
+		printf("Your answer: ");
+		scanf(" %[^\n]", answer);
+		if(strcmp(answer,difficultyArr[index].answer)==0){
+			printf("Correct! , the enemy is down 15hp\n");
+			enemyHP = enemyHP-damage;
+		}else{
+			printf("Wrong! , you are down 15hp\n");
+			playerHP=playerHP-damage;
+		}
+		printf("HP of enemy : %d\n", enemyHP);
+        printf("HP of player : %d\n", playerHP);
+        askedQues++;
+	}
+	time_t end = time(NULL);
+	int timeTaken = end - start;
+	printf("\nBATTLE RESULTS\n");
+	if (playerHP <= 0 && enemyHP <= 0) {
+        printf("Both you and the enemy have fallen! It's a tie!\n");
+    } else if (playerHP <= 0) {
+        printf("You died! The enemy won :/\n");
+    } else if (enemyHP <= 0) {
+        printf("You won!! The enemy is defeated.\n");
+        if (timeTaken <= goalTime) {
+            printf("And you completed it within the goal time of %d seconds!\n", goalTime);
+        } else {
+            printf("But you took longer than your goal time (%d seconds).\n", goalTime);
+        }
+    } else {
+        printf("Battle ended without a clear winner.\n");
+    }
+}
